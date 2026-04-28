@@ -1,18 +1,17 @@
 SELECT
-    '#' || (jsonb->>'text'::TEXT) AS tag, count(*) AS count
+    '#' || tag AS tag, count(*) AS count
 FROM (
-    SELECT DISTINCT 
-        t1.data->> 'id',
-        jsonb_array_elements(
-                COALESCE(t2.data->'entities'->'hashtags','[]') ||
-                COALESCE(t2.data->'extended_tweet'->'entities'->'hashtags','[]')
-            ) AS jsonb
-    FROM tweets_jsonb t1
-    JOIN tweets_jsonb t2 ON (t1.data->> 'id' = t2.data->> 'id')
-    WHERE t1.data-> 'extended_tweet'-> 'entities' -> 'hashtags' @> '[{"text": "coronavirus"}]'
+    SELECT DISTINCT id,(jsonb->>'text'::TEXT) AS tag from(
+        SELECT 
+            t1.data->> 'id' AS id,
+            jsonb_array_elements(
+                COALESCE(t1.data->'extended_tweet'->'entities'->'hashtags',t1.data->'entities'->'hashtags','[]') ) AS jsonb
+        FROM tweets_jsonb t1
+        WHERE t1.data-> 'entities' -> 'hashtags' @> '[{"text": "coronavirus"}]'
         OR t1.data -> 'extended_tweet'-> 'entities' -> 'hashtags' @> '[{"text": "coronavirus"}]'
-) t 
+    ) AS sub
+    ORDER BY tag
+) AS t 
 GROUP BY tag
 ORDER BY count DESC, tag
 LIMIT 1000;
-

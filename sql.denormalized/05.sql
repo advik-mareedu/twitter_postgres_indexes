@@ -8,10 +8,6 @@ FROM (
                 COALESCE(data->'extended_tweet'->'entities'->'hashtags',data->'entities'->'hashtags','[]') ) AS jsonb
         FROM tweets_jsonb
         WHERE 
-        (data-> 'entities' -> 'hashtags' @> '[{"text": "coronavirus"}]'
-        OR 
-        data -> 'extended_tweet'-> 'entities' -> 'hashtags' @> '[{"text": "coronavirus"}]')
-        AND 
         to_tsvector('english',COALESCE(data->'extended_tweet'->>'full_text',data->>'text'))@@to_tsquery('english','coronavirus')
         AND 
         (data ->> 'lang') = 'en'

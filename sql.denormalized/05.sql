@@ -11,7 +11,7 @@ FROM (
         to_tsvector('english',COALESCE(data->'extended_tweet'->>'full_text',data->>'text'))@@to_tsquery('english','coronavirus')
         AND 
         (data ->> 'lang') = 'en'
-    ) AS sub ORDER BY id
+    ) AS sub 
 ) AS t  
 GROUP BY tag
 ORDER BY count DESC, tag
